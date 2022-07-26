@@ -17,7 +17,7 @@ def get_model_data():
     :return: dataframes for each sheet in excel file
     """
     folder_path = r'https://raw.githubusercontent.com/sudinrmg/macro_model/main'
-    file_name = r'\*xlsx'
+    file_name = r'country_model_data.xlsx'
     excel_file = f"{folder_path}{file_name}"
 
     # ASSIGN EACH SHEET OF EXCEL FILE TO A DATAFRAME
