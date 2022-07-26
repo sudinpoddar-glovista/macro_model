@@ -16,12 +16,12 @@ def get_model_data():
     Takes in the latest excel output from country model calculations
     :return: dataframes for each sheet in excel file
     """
-    folder_path = r'https://raw.githubusercontent.com/sudinrmg/macro_model/main'
-    file_name = r'country_model_data.xlsx'
-    excel_file = f"{folder_path}{file_name}"
+    #folder_path = r'https://raw.githubusercontent.com/sudinrmg/macro_model/main'
+    file_name = "country_model_data.xlsx"
+    #excel_file = f"{folder_path}{file_name}"
 
     # ASSIGN EACH SHEET OF EXCEL FILE TO A DATAFRAME
-    xl = pd.ExcelFile(excel_file)
+    xl = pd.ExcelFile(file_name)
     df_dict = {}
     for sheet in xl.sheet_names:
         df_dict[f'{sheet}'] = pd.read_excel(xl, sheet_name=sheet)
