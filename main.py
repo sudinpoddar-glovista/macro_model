@@ -17,12 +17,11 @@ def get_model_data():
     :return: dataframes for each sheet in excel file
     """
     folder_path = r'https://raw.githubusercontent.com/sudinrmg/macro_model/main'
-    file_type = r'\*xlsx'
-    files = glob.glob(folder_path + file_type)
-    max_file = max(files, key=os.path.getctime)
+    file_name = r'\*xlsx'
+    excel_file = f"{folder_path}{file_name}"
 
     # ASSIGN EACH SHEET OF EXCEL FILE TO A DATAFRAME
-    xl = pd.ExcelFile(max_file)
+    xl = pd.ExcelFile(excel_file)
     df_dict = {}
     for sheet in xl.sheet_names:
         df_dict[f'{sheet}'] = pd.read_excel(xl, sheet_name=sheet)
