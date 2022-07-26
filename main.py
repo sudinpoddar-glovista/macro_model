@@ -16,7 +16,7 @@ def get_model_data():
     Takes in the latest excel output from country model calculations
     :return: dataframes for each sheet in excel file
     """
-    folder_path = r'I:\Sudin Poddar\Tools\PyCharm\ilc-main\output\ilc_country_model'
+    folder_path = r'https://raw.githubusercontent.com/sudinrmg/macro_model/main'
     file_type = r'\*xlsx'
     files = glob.glob(folder_path + file_type)
     max_file = max(files, key=os.path.getctime)
