@@ -14,7 +14,7 @@ def get_model_data():
     Takes in the latest excel output from country model calculations
     :return: dataframes for each sheet in excel file
     """
-    folder_path = "I:/Sudin Poddar/Tools/PyCharm/ilc-main/output/ilc_country_model/"
+    folder_path = "https://raw.githubusercontent.com/sudinrmg/macro_model/"
     file_type = 'country_model_data.xlsx'
     model_file = f"{folder_path}{file_type}"
 
