@@ -63,8 +63,8 @@ def fin_con():
         y='Value:Q',
         color=alt.condition(
             alt.datum.Value > 0,
-            alt.value("#89CFF0"),
-            alt.value("#00136C")),
+            alt.value("#DB3951"),
+            alt.value("#89CFF0")),
         tooltip=['Date', 'Index', 'Value']
     ).add_selection(scales).configure_mark(opacity=0.4)
 
