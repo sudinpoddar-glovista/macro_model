@@ -11,9 +11,9 @@ def get_fin_con_model_data():
     Takes in the latest excel output from country model calculations
     :return: dataframes for each sheet in excel file
     """
-    folder_path = "I:/Sudin Poddar/Tools/PyCharm/ilc-main/output/ilc_macro_model/"
-    file_type = 'macro_model_data.xlsx'
-    model_file = f"{folder_path}{file_type}"
+    #folder_path = "I:/Sudin Poddar/Tools/PyCharm/ilc-main/output/ilc_macro_model/"
+    #file_type = 'macro_model_data.xlsx'
+    model_file = "macro_model_data.xlsx"
 
     # ASSIGN EACH SHEET OF EXCEL FILE TO A DATAFRAME
     xl = pd.ExcelFile(model_file)
