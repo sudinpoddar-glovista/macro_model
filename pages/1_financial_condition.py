@@ -8,7 +8,7 @@ import pandas as pd
 @st.experimental_memo
 def get_fin_con_model_data():
     """
-    Takes in the latest excel output from country model calculations
+    Takes in the latest excel output from macro model calculations
     :return: dataframes for each sheet in excel file
     """
     #folder_path = "I:/Sudin Poddar/Tools/PyCharm/ilc-main/output/ilc_macro_model/"
@@ -33,7 +33,7 @@ def fin_con():
     idx_ret_df.columns = ['Date', 'Index', 'Return', 'ReturnType']
 
     # ASSIGN HEADER TO PAGE
-    st.title("Chicago Fed National Financial Condition Data")
+    st.title("Chicago Fed National Financial Condition Index")
 
     # CREATE DROPDOWN TO SELECT RETURN STREAM
     st.caption("Return Stream Selection:")
@@ -54,7 +54,7 @@ def fin_con():
     selected_fin_cond_df = fin_con_df.loc[fin_con_df.Date >= min_dt]
 
     # CREATE CHART
-    st.caption("Condition vs Returns Charts:")
+    st.caption("Condition vs Returns:")
 
     scales = alt.selection_interval(bind='scales')
 
