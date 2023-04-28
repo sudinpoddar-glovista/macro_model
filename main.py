@@ -19,40 +19,37 @@ def get_model_data():
     #model_file = f"{folder_path}{file_type}"
 
     # ASSIGN EACH SHEET OF EXCEL FILE TO A DATAFRAME
-    xl = pd.ExcelFile(file_)
-    df_dict = {}
-    for sheet in xl.sheet_names:
-        df_dict[f'{sheet}'] = pd.read_excel(xl, sheet_name=sheet)
-
-    return df_dict['MetricScore'], df_dict['FactorScore'], df_dict['Variable']
+    df_dictionary = pd.read_excel(file_, sheet_name=None)
+    return df_dictionary
 
 
 # SELECT RECENT AND PREVIOUS DATES
 def main():
     # CALL THE MODEL DATA FUNCTION AND ASSIGN TO DF VARIABLES
-    metric_score_df, factor_score_df, variable_df = get_model_data()
+    df_dict = get_model_data()
+    df_metric_score, df_factor_score, df_variable = df_dict.values()
 
-    overall_df = metric_score_df.pivot(index=['Periodid', 'CountryName'], columns=['Metric'], values='Score')
-    overall_df.reset_index(inplace=True)
-    overall_df = overall_df[['Periodid', 'CountryName', 'Overall Rank', 'Overall', 'Economics',
+    df_overall = df_metric_score.pivot(index=['Periodid', 'CountryName'], columns=['Metric'], values='Score')
+    df_overall.reset_index(inplace=True)
+    df_overall = df_overall[['Periodid', 'CountryName', 'Overall Rank', 'Overall', 'Economics',
                              'Valuation', 'Sentiment', 'Profit', 'Leverage']]
-    overall_df.sort_values(by=['Periodid'], ascending=False, inplace=True)
+    df_overall.sort_values(by=['Periodid'], ascending=False, inplace=True)
 
     # FIX PERIODID DTYPE
-    metric_score_df['Periodid'] = pd.to_datetime(metric_score_df['Periodid'])
-    metric_score_df.set_index('Periodid', inplace=True)
-    metric_score_df.index = metric_score_df.index.to_period('M').to_timestamp('M')
-    metric_score_df.reset_index(inplace=True)
+    df_metric_score['Periodid'] = pd.to_datetime(df_metric_score['Periodid'])
+    df_metric_score.set_index('Periodid', inplace=True)
+    df_metric_score.index = df_metric_score.index.to_period('M').to_timestamp('M')
+    df_metric_score.reset_index(inplace=True)
 
-    factor_score_df['Periodid'] = pd.to_datetime(factor_score_df['Periodid'])
-    factor_score_df.set_index('Periodid', inplace=True)
-    factor_score_df.index = factor_score_df.index.to_period('M').to_timestamp('M')
-    factor_score_df.reset_index(inplace=True)
+    df_factor_score['Periodid'] = pd.to_datetime(df_factor_score['Periodid'])
+    df_factor_score.set_index('Periodid', inplace=True)
+    df_factor_score.index = df_factor_score.index.to_period('M').to_timestamp('M')
+    df_factor_score.reset_index(inplace=True)
 
-    variable_df['Periodid'] = pd.to_datetime(variable_df['Periodid'])
-    variable_df.set_index('Periodid', inplace=True)
-    variable_df.index = variable_df.index.to_period('M').to_timestamp('M')
-    variable_df.reset_index(inplace=True)
+    df_variable['Periodid'] = pd.to_datetime(df_variable['Periodid'])
+    df_variable.set_index('Periodid', inplace=True)
+    df_variable.index = df_variable.index.to_period('M').to_timestamp('M')
+    df_variable.reset_index(inplace=True)
 
     # ASSIGN HEADER TO MAIN PAGE
     st.title("ILC Country Ranking Framework")
@@ -61,15 +58,14 @@ def main():
 
     # ASSIGN SUBHEADER AND CREATE SELECTION BOXES FOR DATES IN SIDEBAR
     with tab1:
-
         st.caption("Dates For Rank Compare:")
         recent_dt = st.selectbox(
-            'Select recent date:', overall_df['Periodid'].unique(), key='recent_dt')
+            'Select recent date:', df_overall['Periodid'].unique(), key='recent_dt')
         prior_dt = st.selectbox(
-            'Select prior date:', overall_df['Periodid'].unique(), index=1, key='prior_dt')
+            'Select prior date:', df_overall['Periodid'].unique(), index=1, key='prior_dt')
 
-        recent_rnk_df = overall_df.loc[overall_df['Periodid'] == recent_dt]
-        prior_rnk_df = overall_df.loc[overall_df['Periodid'] == prior_dt]
+        recent_rnk_df = df_overall.loc[df_overall['Periodid'] == recent_dt]
+        prior_rnk_df = df_overall.loc[df_overall['Periodid'] == prior_dt]
         rnk_comp_df = recent_rnk_df.merge(prior_rnk_df, how='left', on='CountryName', suffixes=['_r', '_p'])
         rnk_comp_df['Rnk_d'] = rnk_comp_df['Overall Rank_r'] - rnk_comp_df['Overall Rank_p']
         rnk_comp_df['Econ_d'] = rnk_comp_df['Economics_r'] - rnk_comp_df['Economics_p']
@@ -144,7 +140,7 @@ def main():
         # CALL TABLE
         AgGrid(rnk_comp_df, gridOptions=gridoptions, allow_unsafe_jscode=True)
 
-        @st.experimental_memo
+        @st.cache_data
         def convert_df(df):
             # IMPORTANT: Cache the conversion to prevent computation on every rerun
             return df.to_csv().encode('utf-8')
@@ -157,6 +153,7 @@ def main():
             file_name='rnk_comp_df.csv',
             mime='text/csv',
         )
+        
     with tab2:
 
         # ASSIGN SUBHEADER AND CREATE SELECTION BOXES
@@ -166,13 +163,13 @@ def main():
         colors_unique = ['#3cb44b', '#469990', '#4363d8', '#aaffc3', '#dcbeff', '#ffd8b1']
 
         cntry_nm = st.multiselect(
-            'Select country/s:', metric_score_df['CountryName'].unique(), ['China'], key='sh_cntry')
+            'Select country/s:', df_metric_score['CountryName'].unique(), ['China'], key='sh_cntry')
         metric_nm = st.multiselect(
             'Select metric/s:', metrics_unique, ['Overall'], key='sh_metric')
 
         # CREATE THE METRIC HISTORY TABLE
-        score_hist_df = metric_score_df.loc[(metric_score_df['CountryName'].isin(cntry_nm)) &
-                                            (metric_score_df['Metric'].isin(metric_nm))]
+        score_hist_df = df_metric_score.loc[(df_metric_score['CountryName'].isin(cntry_nm)) &
+                                            (df_metric_score['Metric'].isin(metric_nm))]
 
         # ASSIGN SUBHEADER AND CALL CHART
         st.caption("Score History Chart:")
@@ -194,22 +191,22 @@ def main():
         st.caption("Filters For Factor History:")
 
         metric_fh = st.selectbox(
-            'Select metric:', variable_df['Metric'].unique(), key='fh_metric')
+            'Select metric:', df_variable['Metric'].unique(), key='fh_metric')
         factor_fh = st.selectbox(
-            'Select factor:', variable_df.loc[variable_df['Metric'] == metric_fh]['Factor'].unique(),
+            'Select factor:', df_variable.loc[df_variable['Metric'] == metric_fh]['Factor'].unique(),
             key='fh_factor')
         country_fh = st.multiselect(
-            'Select country/s:', variable_df['CountryName'].unique(), cntry_nm, key='fh_cntry')
+            'Select country/s:', df_variable['CountryName'].unique(), cntry_nm, key='fh_cntry')
 
         # CREATE THE FACTOR HISTORY TABLE
-        variable_hist_df = variable_df.loc[(variable_df['Factor'] == factor_fh) &
-                                           (variable_df['Periodid'] >= factor_score_df['Periodid'].min()) &
-                                           (variable_df['CountryName'].isin(country_fh))][['Periodid',
+        df_variable_hist = df_variable.loc[(df_variable['Factor'] == factor_fh) &
+                                           (df_variable['Periodid'] >= df_factor_score['Periodid'].min()) &
+                                           (df_variable['CountryName'].isin(country_fh))][['Periodid',
                                                                                            'CountryName',
                                                                                            'value_orig']]
 
-        variable_score_df = factor_score_df.loc[(factor_score_df['Factor'] == factor_fh) &
-                                                (factor_score_df['CountryName'].isin(country_fh))][['Periodid',
+        variable_score_df = df_factor_score.loc[(df_factor_score['Factor'] == factor_fh) &
+                                                (df_factor_score['CountryName'].isin(country_fh))][['Periodid',
                                                                                                     'CountryName',
                                                                                                     'FactorZScore']]
 
@@ -219,7 +216,7 @@ def main():
         with col1:
             st.caption("Factor History Chart:")
 
-            fact_hist_chart = alt.Chart(variable_hist_df).mark_line().encode(
+            fact_hist_chart = alt.Chart(df_variable_hist).mark_line().encode(
                 x='Periodid:T',
                 y='value_orig:Q',
                 color=alt.Color('CountryName:N', scale=alt.Scale(scheme='darkmulti')),
@@ -241,28 +238,26 @@ def main():
             st.altair_chart(fact_score_chart, use_container_width=True)
 
 
-    #
+#
 
-    # factor_hist_df = factor_hist_df.fillna(0)
-    # factor_hist_df['Periodid'] = pd.to_datetime(factor_hist_df['Periodid'])
-    # factor_hist_df.set_index('Periodid', inplace=True)
-    # factor_hist_df.index = factor_hist_df.index.to_period('M').to_timestamp('M')
-    # factor_hist_df.reset_index(inplace=True)
-    #
-    # # CALL HEADER AND CHART
-    # st.header("Country Factor History:")
-    # factor_chart = alt.Chart(factor_hist_df).mark_line().encode(
-    #     x='Periodid', y='value_orig', color='CountryName', tooltip=['Periodid', 'CountryName',
-    #                                                                 'value_orig'])
-    #
-    # st.altair_chart(factor_chart, use_container_width=True)
+# factor_hist_df = factor_hist_df.fillna(0)
+# factor_hist_df['Periodid'] = pd.to_datetime(factor_hist_df['Periodid'])
+# factor_hist_df.set_index('Periodid', inplace=True)
+# factor_hist_df.index = factor_hist_df.index.to_period('M').to_timestamp('M')
+# factor_hist_df.reset_index(inplace=True)
+#
+# # CALL HEADER AND CHART
+# st.header("Country Factor History:")
+# factor_chart = alt.Chart(factor_hist_df).mark_line().encode(
+#     x='Periodid', y='value_orig', color='CountryName', tooltip=['Periodid', 'CountryName',
+#                                                                 'value_orig'])
+#
+# st.altair_chart(factor_chart, use_container_width=True)
 
 
-# RUN THE APP IF CALLED FROM THIS SCRIPT
+## RUN THE APP IF CALLED FROM THIS SCRIPT
 if __name__ == "__main__":
-    st.set_page_config(
-        "ILC Country Ranking Framework",
-        #        initial_sidebar_state="expanded",
-        layout="wide",
-    )
-    main()
+    st.set_page_config("ILC Country Ranking Framework",
+        #        initial_sidebar_state="expanded", 
+                       layout="wide")
+main()
