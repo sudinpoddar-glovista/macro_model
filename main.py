@@ -8,7 +8,7 @@ import pandas as pd
 
 
 # EXTRACT MOST RECENT COUNTRY MODEL RANK CALCULATION EXCEL FILE
-@st.experimental_memo
+@st.cache_data
 def get_model_data():
     """
     Takes in the latest excel output from country model calculations
